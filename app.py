@@ -5,6 +5,7 @@ import plotly.express as px
 from datetime import datetime, timezone
 import sys, os, random, time, logging
 import numpy as np
+import json, urllib.request
 
 logging.getLogger("fastf1").setLevel(logging.WARNING)
 logging.getLogger("requests").setLevel(logging.WARNING)
@@ -16,6 +17,8 @@ np.random.seed(42)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from src.ai_engine import engine
 from src.f1_data import generate_telemetry_data, inject_anomaly, detect_anomalies, get_strategy_recommendation, advance_lap
+
+API_URL = os.environ.get("API_URL", "").rstrip("/")
 
 try:
     from src.f1_loader import get_f1_session_info
@@ -68,6 +71,14 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+def _fetch_api(endpoint):
+    try:
+        url = f"{API_URL}{endpoint}"
+        with urllib.request.urlopen(url, timeout=5) as r:
+            return json.loads(r.read())
+    except Exception:
+        return None
+
 if "telemetry_data" not in st.session_state:
     st.session_state.real_data = False
     st.session_state.session_name = "Simulated Grand Prix"
@@ -75,7 +86,19 @@ if "telemetry_data" not in st.session_state:
     st.session_state.driver1_name = "Car #1 (VER)"
     st.session_state.driver2_name = "Car #2 (PER)"
 
-    if get_f1_session_info:
+    if API_URL:
+        with st.spinner("Loading telemetry from PitGuard API..."):
+            data = _fetch_api("/telemetry")
+            if data and data.get("data"):
+                df = pd.DataFrame(data["data"])
+                df = inject_anomaly(df, 7, "brake", car_id=1)
+                df = inject_anomaly(df, 12, "tyre", car_id=2)
+                df = inject_anomaly(df, 15, "speed", car_id=1)
+                st.session_state.telemetry_data = df
+                st.session_state.real_data = True
+                st.session_state.session_name = "Bahrain GP (API)"
+
+    if "telemetry_data" not in st.session_state and get_f1_session_info:
         with st.spinner("Loading real F1 data from 2025 Bahrain GP..."):
             f1 = get_f1_session_info()
             if f1 and f1["laps_data"] is not None:
