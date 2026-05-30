@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  pitguard-api:
+    build: .
+    container_name: pitguard-api
+    ports:
+      - "8000:8000"
+    command: uvicorn api:app --host 0.0.0.0 --port 8000
+    environment:
+      - HF_TOKEN=${HF_TOKEN:-}
+    restart: unless-stopped
+
+  pitguard-ui:
+    build: .
+    container_name: pitguard-ui
+    ports:
+      - "8501:8501"
+    command: streamlit run app.py --server.port=8501 --server.address=0.0.0.0
+    environment:
+      - HF_TOKEN=${HF_TOKEN:-}
+      - API_URL=http://pitguard-api:8000
+    depends_on:
+      - pitguard-api
+    restart: unless-stopped
+
+volumes:
+  cache-data:

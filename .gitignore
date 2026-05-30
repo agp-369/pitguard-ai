@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.env
+*.safetensors
+*.bin
+*.pth
+granite_ready.txt
+data/cache/
+*.ff1pkl
+*.sqlite
+__MACOSX/
