@@ -3,7 +3,8 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 from datetime import datetime, timezone
-import sys, os, random, time, logging
+import sys, os, random, logging
+from streamlit_autorefresh import st_autorefresh
 import numpy as np
 import json, urllib.request
 
@@ -227,19 +228,21 @@ with st.sidebar:
     st.caption("IBM AI Builders Challenge 2026 · Saving lives through AI security.")
 
 if st.session_state.live_active:
-    st.toast(f"🏎️ Advancing to lap {int(c1['lap'].max()) + 1}...", icon="🔄")
-    st.session_state.telemetry_data = advance_lap(st.session_state.telemetry_data, car_id=1)
-    st.session_state.telemetry_data = advance_lap(st.session_state.telemetry_data, car_id=2)
-    r = random.randint(1, 100)
-    if r > 88:
-        lap = int(st.session_state.telemetry_data["lap"].max())
-        atype = random.choice(["brake", "tyre", "speed"])
-        car = random.choice([1, 2])
-        st.session_state.telemetry_data = inject_anomaly(st.session_state.telemetry_data, lap, atype, car)
-        tag = driver1 if car == 1 else driver2
-        st.session_state.radio_log.append(f"[{tag}]  ⚠️ New {atype} anomaly on lap {lap}")
-    time.sleep(2.0)
-    st.rerun()
+    count = st_autorefresh(interval=2000, key="live_refresh")
+    if "live_count" not in st.session_state:
+        st.session_state.live_count = count
+    if count != st.session_state.live_count:
+        st.session_state.live_count = count
+        st.session_state.telemetry_data = advance_lap(st.session_state.telemetry_data, car_id=1)
+        st.session_state.telemetry_data = advance_lap(st.session_state.telemetry_data, car_id=2)
+        r = random.randint(1, 100)
+        if r > 88:
+            lap = int(st.session_state.telemetry_data["lap"].max())
+            atype = random.choice(["brake", "tyre", "speed"])
+            car = random.choice([1, 2])
+            st.session_state.telemetry_data = inject_anomaly(st.session_state.telemetry_data, lap, atype, car)
+            tag = driver1 if car == 1 else driver2
+            st.session_state.radio_log.append(f"[{tag}]  ⚠️ New {atype} anomaly on lap {lap}")
 
 def dynamic_ai_response(prompt, df, anom_df):
     d = anom_df
