@@ -67,24 +67,24 @@ PitGuard AI integrates IBM Granite as its core intelligence layer. Each tool has
 ```mermaid
 graph TD
     subgraph "Data Layer"
-        A[FastF1 API<br/>Real F1 Telemetry] --> B[Telemetry Buffer<br/>Pandas DataFrame]
-        C[Synthetic Generator<br/>Offline Fallback] --> B
+        A[FastF1 API - Real Telemetry] --> B[Pandas Buffer]
+        C[Synthetic Generator - Fallback] --> B
     end
 
     subgraph "Detection Engine"
-        B --> D[Z-Score Analyzer<br/>11 channels · rolling window]
-        D --> E{Anomaly?<br/>|Z| > 2.0}
-        E -->|Yes| F[Severity Classifier<br/>WARNING 2.0-3.0 · CRITICAL >3.0]
-        E -->|No| G[Log as nominal]
+        B --> D[Z-Score Analyzer - 11 channels]
+        D --> E{Anomaly > |Z| 2.0?}
+        E -->|Yes| F[Severity Classifier - Warning / Critical]
+        E -->|No| G[Log as Nominal]
     end
 
     subgraph "IBM Granite AI"
-        F --> H[IBM Granite 3.1-2B<br/>System Prompt + Context]
-        H --> I[Doman Expert Routing]
-        I --> J1[Security Analysis<br/>CAN bus · injection · spoofing]
-        I --> J2[Strategy Analysis<br/>Pit windows · degradation]
-        I --> J3[Telemetry Analysis<br/>Multi-sensor correlation]
-        I --> J4[Explainability Report<br/>Decision trace · Z-score]
+        F --> H["IBM Granite 3.1-2B (System Prompt + Context)"]
+        H --> I[Domain Expert Router]
+        I --> J1[Security Analysis]
+        I --> J2[Strategy Analysis]
+        I --> J3[Telemetry Analysis]
+        I --> J4[Explainability Report]
     end
 
     subgraph "User Interface"
@@ -92,7 +92,7 @@ graph TD
         J2 --> K
         J3 --> K
         J4 --> K
-        K --> L[Flashing Alert Banner]
+        K --> L[Alert Banner]
         K --> M[Team Radio Feed]
         K --> N[AI Chat Interface]
         K --> O[Explainability Panel]
@@ -102,9 +102,6 @@ graph TD
         P[Docker Container] --> Q[Streamlit :8501]
         P --> R[FastAPI :8000]
     end
-
-    style H fill:#e00000,color:#fff,stroke:#fff
-    style I fill:#e00000,color:#fff,stroke:#fff
 ```
 
 ### Data Flow
