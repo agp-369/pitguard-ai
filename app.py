@@ -228,8 +228,8 @@ with st.sidebar:
 
 if st.session_state.live_active:
     st.toast(f"🏎️ Advancing to lap {int(c1['lap'].max()) + 1}...", icon="🔄")
-    st.session_state.telemetry_data = advance_lap(st.session_state.telemetry_data, car_id=1, seed=None)
-    st.session_state.telemetry_data = advance_lap(st.session_state.telemetry_data, car_id=2, seed=None)
+    st.session_state.telemetry_data = advance_lap(st.session_state.telemetry_data, car_id=1)
+    st.session_state.telemetry_data = advance_lap(st.session_state.telemetry_data, car_id=2)
     r = random.randint(1, 100)
     if r > 88:
         lap = int(st.session_state.telemetry_data["lap"].max())
