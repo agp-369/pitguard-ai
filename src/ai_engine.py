@@ -32,7 +32,7 @@ class GraniteEngine:
             from transformers import AutoModelForCausalLM, AutoTokenizer
             logger.info(f"Loading {self.model_name} from HuggingFace cache...")
             self.tokenizer = AutoTokenizer.from_pretrained(
-                self.model_name, trust_remote_code=True, local_files_only=True
+                self.model_name, trust_remote_code=True
             )
             self.model = AutoModelForCausalLM.from_pretrained(
                 self.model_name,
@@ -40,7 +40,6 @@ class GraniteEngine:
                 device_map="auto",
                 dtype="auto",
                 low_cpu_mem_usage=True,
-                local_files_only=True,
             )
             self._loaded = True
             logger.info("IBM Granite 3.1-2B loaded successfully")
