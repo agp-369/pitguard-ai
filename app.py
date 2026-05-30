@@ -177,9 +177,19 @@ st.markdown(f'<div class="status-bar">'
 if len(high_anomalies) > 0:
     top = high_anomalies.iloc[0]
     driver_tag = driver1 if int(top["car_id"]) == 1 else driver2
+    alert_key = f"{int(top['lap'])}-{top['sensor']}-{int(top['car_id'])}"
+    if "last_alert_key" not in st.session_state:
+        st.session_state.last_alert_key = alert_key
+        st.session_state.alert_repeat_count = 0
+    if alert_key == st.session_state.last_alert_key:
+        st.session_state.alert_repeat_count += 1
+    else:
+        st.session_state.last_alert_key = alert_key
+        st.session_state.alert_repeat_count = 0
+    staleness = f" (repeated {st.session_state.alert_repeat_count}x)" if st.session_state.alert_repeat_count > 0 else ""
     st.markdown(f"""<div class="alert-banner">
         🚨 CRITICAL ALERT — {driver_tag} · Lap {int(top['lap'])} · {top['sensor'].replace('_',' ').upper()} 
-        (Z={top['z_score']}) — Immediate pit wall attention 🚨
+        (Z={top['z_score']}) — Immediate pit wall attention{staleness} 🚨
     </div>""", unsafe_allow_html=True)
     msg = f"[{driver_tag}]  Pit wall: {top['sensor'].replace('_',' ')} anomaly — Z-score {top['z_score']} — checking integrity"
     if not st.session_state.radio_log or st.session_state.radio_log[-1] != msg:
@@ -236,7 +246,7 @@ if st.session_state.live_active:
         st.session_state.telemetry_data = advance_lap(st.session_state.telemetry_data, car_id=1)
         st.session_state.telemetry_data = advance_lap(st.session_state.telemetry_data, car_id=2)
         r = random.randint(1, 100)
-        if r > 88:
+        if r > 75:
             lap = int(st.session_state.telemetry_data["lap"].max())
             atype = random.choice(["brake", "tyre", "speed"])
             car = random.choice([1, 2])
@@ -375,10 +385,9 @@ elif page == "Dashboard":
         st.markdown(_card(f"{last_c2['speed_kmh']:.0f}", "Speed (km/h)", sub=driver2),
                     unsafe_allow_html=True)
     with col3:
-        gap_color = "#00e000" if gap < 0 else "#e00000"
-        sign = "+" if gap > 0 else ""
-        st.markdown(_card(f"{sign}{gap:.2f}s", f"Gap {driver2}→{driver1}",
-                          style=f"color:{gap_color}"), unsafe_allow_html=True)
+        sign = "+" if gap > 0 else "−" if gap < 0 else ""
+        st.markdown(_card(f"{sign}{abs(gap):.2f}s", f"Gap {driver2}→{driver1}",
+                          style="color:#cccccc"), unsafe_allow_html=True)
     with col4:
         a = len(anomalies)
         c = "#e00000" if a > 0 else "#00e000"
