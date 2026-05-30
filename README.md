@@ -36,6 +36,7 @@ A hallucinated AI recommendation on the pit wall is as dangerous as a spoofed se
 |----------|-------------|
 | Missed sensor spoofing | $10M+ car write-off, driver injury |
 | Hallucinated pit strategy | Lost podium, $5M+ prize money swing |
+| Unsafe pit release due to corrupted data | Penalty or collision, career-ending points loss |
 | Delayed anomaly detection | 3+ sessions of corrupted data |
 | Unverifiable AI recommendation | Engineers ignore the system entirely |
 
