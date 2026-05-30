@@ -228,12 +228,20 @@ if st.session_state.live_active:
 
 def dynamic_ai_response(prompt, df, anom_df):
     d = anom_df
-    ctx = f"Session: {st.session_state.get('session_name','Live')} — {len(df[df['car_id']==1])} laps, 2 cars. {len(d)} anomalies. "
+    n_laps = len(df[df['car_id']==1])
+    n_anoms = len(d)
+    ctx_data = {"n_laps": n_laps, "n_cars": 2, "n_anomalies": n_anoms}
+    ctx = f"Session: {st.session_state.get('session_name','Live')} — {n_laps} laps, 2 cars. {n_anoms} anomalies. "
     if len(d) > 0:
         r = d.iloc[0]
         car_name = driver1 if int(r['car_id']) == 1 else driver2
         ctx += f"Latest alert: {car_name} Lap {int(r['lap'])} {r['sensor']} (Z={r['z_score']}). "
-    return engine.generate(f"{ctx}\n\nQuestion: {prompt}")
+        ctx_data["latest_anomaly"] = {
+            "lap": int(r['lap']), "sensor": r['sensor'],
+            "z_score": r['z_score'], "car": car_name,
+            "severity": r['severity']
+        }
+    return engine.generate(f"{ctx}\n\nQuestion: {prompt}", context=ctx_data)
 
 if page == "Mission Overview":
     st.markdown("""
