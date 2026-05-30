@@ -96,11 +96,11 @@ def get_strategy_recommendation(lap: int, compound: str, degradation: float, tra
             "risk": "LOW — extending stint builds flexibility"}
 
 
-def advance_lap(history: pd.DataFrame, car_id: int = 1) -> pd.DataFrame:
+def advance_lap(history: pd.DataFrame, car_id: int = 1, seed: int = 42) -> pd.DataFrame:
     last_lap = history[history["car_id"] == car_id]["lap"].max()
     new_lap = last_lap + 1
     new_row = history[history["car_id"] == car_id].iloc[-1].to_dict()
-    drift = np.random.RandomState(seed=42 + car_id + new_lap * 100)
+    drift = np.random.RandomState(seed=None if seed is None else seed + car_id + new_lap * 100)
     tyre_deg = new_lap * 0.08 * (1.0 if car_id == 1 else 1.1)
     fuel_effect = 0
     new_row.update({

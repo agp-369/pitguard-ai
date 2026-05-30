@@ -198,7 +198,8 @@ with st.sidebar:
     st.markdown(f"**Drivers:** {driver1} · {driver2}")
     st.markdown(f"**Laps:** {len(c1)} each")
     st.markdown(f"**Alerts:** {len(anomalies)} ({len(high_anomalies)} HIGH)")
-    st.markdown(f"**Status:** {'🔴 LIVE' if st.session_state.live_active else '⏸️ PAUSED'}")
+    live_lap_c1 = int(c1["lap"].max()) if len(c1) > 0 else 0
+    st.markdown(f"**Status:** {'🔴 LIVE' if st.session_state.live_active else '⏸️ PAUSED'}  |  Lap {live_lap_c1}")
     if st.button("▶️ Live" if not st.session_state.live_active else "⏹️ Stop", width='stretch'):
         st.session_state.live_active = not st.session_state.live_active
         st.rerun()
@@ -226,8 +227,9 @@ with st.sidebar:
     st.caption("IBM AI Builders Challenge 2026 · Saving lives through AI security.")
 
 if st.session_state.live_active:
-    st.session_state.telemetry_data = advance_lap(st.session_state.telemetry_data, car_id=1)
-    st.session_state.telemetry_data = advance_lap(st.session_state.telemetry_data, car_id=2)
+    st.toast(f"🏎️ Advancing to lap {int(c1['lap'].max()) + 1}...", icon="🔄")
+    st.session_state.telemetry_data = advance_lap(st.session_state.telemetry_data, car_id=1, seed=None)
+    st.session_state.telemetry_data = advance_lap(st.session_state.telemetry_data, car_id=2, seed=None)
     r = random.randint(1, 100)
     if r > 88:
         lap = int(st.session_state.telemetry_data["lap"].max())
@@ -236,7 +238,7 @@ if st.session_state.live_active:
         st.session_state.telemetry_data = inject_anomaly(st.session_state.telemetry_data, lap, atype, car)
         tag = driver1 if car == 1 else driver2
         st.session_state.radio_log.append(f"[{tag}]  ⚠️ New {atype} anomaly on lap {lap}")
-    time.sleep(0.1)
+    time.sleep(2.0)
     st.rerun()
 
 def dynamic_ai_response(prompt, df, anom_df):
@@ -347,7 +349,7 @@ if page == "Mission Overview":
 
     st.info(
         "👈 **Navigate** through the app using the sidebar. Start with **Dashboard** for a live multi-car view, "
-        "then explore each module. All alerts are generated from real 2025 Bahrain GP telemetry with injected anomalies."
+        "then explore each module. The data source indicator (📡 REAL / 🖥️ SIMULATED) is shown in the status bar."
     )
 
 elif page == "Dashboard":
@@ -479,7 +481,7 @@ elif page == "AI Race Engineer":
     st.markdown("## 🤖 AI Race Engineer")
     st.markdown(f"##### _Ask IBM Granite about {session_name}_  <span class='granite-badge'>IBM Granite</span>", unsafe_allow_html=True)
 
-    for msg in st.session_state.chat_history[-5:]:
+    for msg in st.session_state.chat_history[-20:]:
         if msg["role"] == "user":
             st.markdown(f"""<div style="background:#0d0d1a; border:1px solid #2a2a4a; border-radius:12px; padding:12px; margin:8px 0;">
                 <strong>👤 You:</strong> {msg['content']}</div>""", unsafe_allow_html=True)
@@ -570,27 +572,28 @@ elif page == "Explainability":
         fig.update_layout(template="plotly_dark", title="Anomaly Detection Weights", height=350)
         st.plotly_chart(fig, width='stretch')
     with col2:
-        top_lap = int(anomalies.iloc[0]["lap"]) if len(anomalies) > 0 else 7
-        top_car = int(anomalies.iloc[0]["car_id"]) if len(anomalies) > 0 else 1
-        top_sensor = anomalies.iloc[0]["sensor"] if len(anomalies) > 0 else "brake_temp_c"
-        top_z = anomalies.iloc[0]["z_score"] if len(anomalies) > 0 else 4.2
-        tag = driver1 if top_car == 1 else driver2
         st.markdown("### 📝 Live Decision Trace")
-        st.markdown(f"""
-        <div style="background:#0d0d1a; border:1px solid #333; border-radius:8px; padding:16px;">
-        <small style="color:#666;">Real-time trace — most recent alert:</small><br><br>
-        <strong>1. 📡 Data Ingestion</strong> ✅<br>
-        <small>{tag} · Lap {top_lap} · {st.session_state.get('session_name','')}</small><br><br>
-        <strong>2. 📊 Baseline Comparison</strong> ✅<br>
-        <small>Compared against rolling mean of preceding laps</small><br><br>
-        <strong>3. ⚠️ Z-Score</strong><br>
-        <small><strong style="color:#e00000">{top_sensor.replace('_',' ').title()}</strong> Z = {top_z} (threshold: 3.0)</small><br><br>
-        <strong>4. 🧠 IBM Granite</strong><br>
-        <small>Security classification in progress</small><br><br>
-        <strong>5. 🚨 Alert</strong><br>
-        <small>Alert ID: PG-{now_utc.strftime("%H%M")}-{top_lap}</small>
-        </div>
-        """, unsafe_allow_html=True)
+        if len(anomalies) > 0:
+            top = anomalies.iloc[0]
+            top_lap, top_car, top_sensor, top_z = int(top["lap"]), int(top["car_id"]), top["sensor"], top["z_score"]
+            tag = driver1 if top_car == 1 else driver2
+            st.markdown(f"""
+            <div style="background:#0d0d1a; border:1px solid #333; border-radius:8px; padding:16px;">
+            <small style="color:#666;">Real-time trace — most recent alert:</small><br><br>
+            <strong>1. 📡 Data Ingestion</strong> ✅<br>
+            <small>{tag} · Lap {top_lap} · {st.session_state.get('session_name','')}</small><br><br>
+            <strong>2. 📊 Baseline Comparison</strong> ✅<br>
+            <small>Compared against rolling mean of preceding laps</small><br><br>
+            <strong>3. ⚠️ Z-Score</strong><br>
+            <small><strong style="color:#e00000">{top_sensor.replace('_',' ').title()}</strong> Z = {top_z} (threshold: 3.0)</small><br><br>
+            <strong>4. 🧠 IBM Granite</strong><br>
+            <small>Security classification in progress</small><br><br>
+            <strong>5. 🚨 Alert</strong><br>
+            <small>Alert ID: PG-{now_utc.strftime("%H%M")}-{top_lap}</small>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.success("✅ No anomaly traces to show — all sensors nominal.")
     st.divider()
     st.markdown(f"""<div class="chat-message">
     <strong>📄 IBM Granite Explainability Report</strong><br>
