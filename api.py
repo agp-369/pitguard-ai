@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import sys, os, pandas as pd
+import sys, os, random, pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from src.f1_data import generate_telemetry_data, inject_anomaly, detect_anomalies, get_strategy_recommendation
@@ -38,11 +38,14 @@ def health():
 def get_telemetry():
     global DATA_CACHE
     if DATA_CACHE is None:
-        df1 = generate_telemetry_data(30, car_id=1)
-        df2 = generate_telemetry_data(30, car_id=2)
-        df1 = inject_anomaly(df1, 7, "brake", car_id=1)
-        df2 = inject_anomaly(df2, 12, "tyre", car_id=2)
-        df1 = inject_anomaly(df1, 15, "speed", car_id=1)
+        s = random.randint(0, 10000)
+        df1 = generate_telemetry_data(30, car_id=1, seed=s)
+        df2 = generate_telemetry_data(30, car_id=2, seed=s)
+        a1, a2, a3 = random.randint(4, 8), random.randint(10, 14), random.randint(16, 20)
+        t1, t2, t3 = random.choice(["brake", "tyre", "speed"]), random.choice(["brake", "tyre", "speed"]), random.choice(["brake", "tyre", "speed"])
+        df1 = inject_anomaly(df1, a1, t1, car_id=1)
+        df2 = inject_anomaly(df2, a2, t2, car_id=2)
+        df1 = inject_anomaly(df1, a3, t3, car_id=1)
         DATA_CACHE = pd.concat([df1, df2], ignore_index=True)
     return {"laps": len(DATA_CACHE[DATA_CACHE["car_id"] == 1]),
             "cars": list(DATA_CACHE["car_id"].unique()),

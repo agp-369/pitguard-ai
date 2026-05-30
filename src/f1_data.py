@@ -3,8 +3,8 @@ import pandas as pd
 from typing import Dict, List
 
 
-def generate_telemetry_data(n_laps: int = 20, car_id: int = 1) -> pd.DataFrame:
-    drift = np.random.RandomState(seed=42 + car_id)
+def generate_telemetry_data(n_laps: int = 20, car_id: int = 1, seed: int = 42) -> pd.DataFrame:
+    drift = np.random.RandomState(seed=None if seed is None else seed + car_id)
     base_speed = 285 if car_id == 1 else 278
     laps = []
     for lap in range(1, n_laps + 1):

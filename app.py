@@ -11,8 +11,8 @@ logging.getLogger("fastf1").setLevel(logging.WARNING)
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 
-random.seed(42)
-np.random.seed(42)
+random.seed()
+np.random.seed()
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from src.ai_engine import engine
@@ -103,9 +103,15 @@ if "telemetry_data" not in st.session_state:
             f1 = get_f1_session_info()
             if f1 and f1["laps_data"] is not None:
                 df = f1["laps_data"]
-                df = inject_anomaly(df, min(7, int(df["lap"].max())), "brake", car_id=1)
-                df = inject_anomaly(df, min(12, int(df["lap"].max())), "tyre", car_id=2)
-                df = inject_anomaly(df, min(15, int(df["lap"].max())), "speed", car_id=1)
+                a1 = random.randint(4, min(8, int(df["lap"].max())))
+                a2 = random.randint(10, min(14, int(df["lap"].max())))
+                a3 = random.randint(16, min(20, int(df["lap"].max())))
+                t1 = random.choice(["brake", "tyre", "speed"])
+                t2 = random.choice(["brake", "tyre", "speed"])
+                t3 = random.choice(["brake", "tyre", "speed"])
+                df = inject_anomaly(df, a1, t1, car_id=1)
+                df = inject_anomaly(df, a2, t2, car_id=2)
+                df = inject_anomaly(df, a3, t3, car_id=1)
                 st.session_state.telemetry_data = df
                 st.session_state.real_data = True
                 st.session_state.session_name = f1.get("session_name", "Bahrain GP")
@@ -118,11 +124,18 @@ if "telemetry_data" not in st.session_state:
                     st.session_state.driver1_name = f"{drivers[0].get('name','VER')} (#{drivers[0].get('number','1')})"
 
     if "telemetry_data" not in st.session_state:
-        df1 = generate_telemetry_data(30, car_id=1)
-        df2 = generate_telemetry_data(30, car_id=2)
-        df1 = inject_anomaly(df1, 7, "brake", car_id=1)
-        df2 = inject_anomaly(df2, 12, "tyre", car_id=2)
-        df1 = inject_anomaly(df1, 15, "speed", car_id=1)
+        session_seed = random.randint(0, 10000)
+        df1 = generate_telemetry_data(30, car_id=1, seed=session_seed)
+        df2 = generate_telemetry_data(30, car_id=2, seed=session_seed)
+        a1 = random.randint(4, 8)
+        a2 = random.randint(10, 14)
+        a3 = random.randint(16, 20)
+        t1 = random.choice(["brake", "tyre", "speed"])
+        t2 = random.choice(["brake", "tyre", "speed"])
+        t3 = random.choice(["brake", "tyre", "speed"])
+        df1 = inject_anomaly(df1, a1, t1, car_id=1)
+        df2 = inject_anomaly(df2, a2, t2, car_id=2)
+        df1 = inject_anomaly(df1, a3, t3, car_id=1)
         st.session_state.telemetry_data = pd.concat([df1, df2], ignore_index=True)
 
 if "chat_history" not in st.session_state:
@@ -147,7 +160,7 @@ if df is None or len(df) == 0:
 c1 = df[df["car_id"] == 1]
 c2 = df[df["car_id"] == 2]
 anomalies = detect_anomalies(df)
-high_anomalies = anomalies[anomalies["severity"] == "HIGH"] if len(anomalies) > 0 else pd.DataFrame()
+high_anomalies = anomalies[anomalies["severity"] == "HIGH"].sort_values("lap", ascending=False) if len(anomalies) > 0 else pd.DataFrame()
 
 driver1 = st.session_state.get("driver1_name", "Car #1")
 driver2 = st.session_state.get("driver2_name", "Car #2")
