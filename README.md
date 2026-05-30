@@ -1,20 +1,8 @@
 # 🏎️ PitGuard AI — F1 Cybersecurity & Telemetry Guardian
 ## Powered by IBM Granite 3.1-2B
 
-```
-██████╗ ██╗████████╗ ██████╗ ██╗   ██╗ █████╗ ██████╗     █████╗ ██╗
-██╔══██╗██║╚══██╔══╝██╔════╝ ██║   ██║██╔══██╗██╔══██╗   ██╔══██╗██║
-██████╔╝██║   ██║   ██║  ███╗██║   ██║███████║██║  ██║   ███████║██║
-██╔═══╝ ██║   ██║   ██║   ██║██║   ██║██╔══██║██║  ██║   ██╔══██║██║
-██║     ██║   ██║   ╚██████╔╝╚██████╔╝██║  ██║██████╔╝   ██║  ██║██║
-╚═╝     ╚═╝   ╚═╝    ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═════╝    ╚═╝  ╚═╝╚═╝
-```
-
 [![IBM Granite](https://img.shields.io/badge/IBM-Granite_3.1--2B-red?style=flat-square&logo=ibm)](https://huggingface.co/ibm-granite/granite-3.1-2b-instruct)
 [![Python](https://img.shields.io/badge/Python-3.11-blue?style=flat-square&logo=python)]()
-[![Streamlit](https://img.shields.io/badge/Streamlit-1.54-FF4B4B?style=flat-square&logo=streamlit)]()
-[![FastF1](https://img.shields.io/badge/FastF1-Real_F1_Data-orange?style=flat-square)]()
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker)]()
 [![License](https://img.shields.io/badge/License-Apache_2.0-green?style=flat-square)]()
 
 ---
@@ -110,39 +98,25 @@ response = granite.generate(prompt)
 
 ---
 
-## 🏆 Why This Wins the AI Builders Challenge
+## 🏎️ Key Differentiators
 
-### Judging Criteria Alignment
+| Dimension | PitGuard AI |
+|-----------|-------------|
+| **AI Engine** | IBM Granite 3.1-2B — on-device, CPU-only, Apache 2.0 |
+| **Primary Focus** | Cybersecurity — detecting sensor spoofing, CAN bus injection, telemetry manipulation |
+| **Data Source** | Real F1 telemetry (FastF1, 2025 Bahrain GP) with synthetic augmentation |
+| **Anomaly Detection** | Rolling Z-score across 11 channels with configurable thresholds (2.0 warning, 3.0 critical) |
+| **Deployment** | Docker containerized, fully offline, no cloud dependencies |
 
-| Criterion | How PitGuard AI Delivers | Evidence |
-|-----------|--------------------------|----------|
-| **Innovation (25%)** | First F1 cybersecurity guardian using IBM Granite | No competitor uses LLM-based security for F1 telemetry |
-| **Technical Complexity (25%)** | 11-channel Z-score detection + LLM integration + real F1 data + multi-car | Full-stack data pipeline: ingestion → detection → AI analysis → alerting |
-| **Business Value (25%)** | Prevents $500M asset damage, protects driver lives | TAM $11M/yr across F1/FIA/OEM/defense |
-| **Feasibility (25%)** | Runs on any laptop, no GPU, fully offline | Docker-ready, CPU-only, no cloud APIs |
+### Market Opportunity
 
-### Competitive Landscape
-
-| Feature | PitGuard AI | Competitors |
-|---------|------------|-------------|
-| **AI Engine** | IBM Granite 3.1-2B | GPT wrappers or no AI |
-| **Cybersecurity Focus** | ✅ Core mission | ❌ Performance-only |
-| **Real F1 Data** | ✅ FastF1 (2025 Bahrain) | ❌ Synthetic only |
-| **Multi-Car Support** | ✅ Live gap timing | ❌ Single car |
-| **Explainability** | ✅ Full decision trace | ❌ Black box |
-| **On-Device** | ✅ No cloud | ❌ API-dependent |
-| **Docker Ready** | ✅ docker-compose | ❌ Manual setup |
-| **Offline Demo** | ✅ Fully cached | ❌ Needs internet |
-
-### Business Model
-
-| Customer | Need | Value/Year |
-|----------|------|------------|
-| 🏁 F1 Team | Real-time telemetry security | $500K/team × 10 = $5M |
-| 🏢 FIA | Championship-wide monitoring | $2M |
-| 🚗 Automotive OEM | Autonomous vehicle sensor security | $3M |
-| 🛡️ Defense | Drone/UAV telemetry integrity | $1M |
-| **Total TAM** | | **$11M+** |
+| Sector | Application | Addressable Market |
+|--------|-------------|--------------------|
+| F1 Teams | Real-time telemetry security across 10 teams | $5M/yr |
+| FIA | Championship-wide sensor integrity monitoring | $2M/yr |
+| Automotive OEM | Autonomous vehicle sensor validation | $3M/yr |
+| Defense | Drone/UAV telemetry integrity | $1M/yr |
+| **Total** | | **$11M/yr** |
 
 ---
 
@@ -237,41 +211,6 @@ See [`DEMO_SCRIPT.md`](./DEMO_SCRIPT.md) for the full script.
 | **Containerization** | Docker + docker-compose |
 | **Language** | Python 3.11 |
 | **Dependencies** | See [`requirements.txt`](./requirements.txt) |
-
----
-
-## 📹 Submission Checklist
-
-- [x] **Source code** — Full app with 5 pages + API backend
-- [x] **README** — Complete with problem, solution, architecture, business model
-- [x] **DEMO_SCRIPT.md** — 3-minute video script ready to record
-- [x] **Docker support** — docker-compose up works on any system
-- [x] **Real F1 data** — 2025 Bahrain GP via FastF1
-- [x] **IBM Granite integration** — Core AI engine with structured responses
-- [x] **Explainability module** — Every decision traceable
-- [x] **Multi-car support** — Live gap timing + comparison charts
-- [x] **Anomaly detection** — 11 channels, configurable thresholds
-- [x] **Live telemetry mode** — Auto-refreshing lap advancement
-- [x] **Team Radio feed** — Immersive pit wall feel
-
----
-
-## 📝 Notes for Judges
-
-**What makes this unique:**
-1. **Cybersecurity FIRST approach** — Not "faster lap times," but "saving lives through AI security"
-2. **IBM Granite on device** — Not a GPT wrapper; real open-source IBM AI running locally
-3. **Explainable by design** — Every alert has a human-readable trace
-4. **Real F1 data** — Not a toy; uses actual 2025 race telemetry
-5. **Docker-ready** — Deploy anywhere, no cloud dependencies
-
-**Why open-source matters:**
-- F1 teams can audit every line of code
-- No vendor lock-in
-- Can be customized per team's sensor configuration
-- Security through transparency
-
----
 
 <div align="center">
     <strong>🏎️ PitGuard AI — Saving lives through AI security.</strong><br>
