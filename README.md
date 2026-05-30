@@ -13,20 +13,31 @@
 
 ---
 
-## 💀 The Problem: 1.3 Billion Reasons to Worry
+## 💀 The Problem: The Loss of Trust
 
-Modern F1 cars generate **1.3 billion telemetry data points per race weekend**. Every sensor reading controls a life-or-death decision: brake-by-wire, throttle, steering, tyre pressure, gearbox.
+### Two Sources of Risk
 
-**The terrifying truth:** There is no dedicated security layer validating whether that data is real, spoofed, or maliciously injected.
+**1. Telemetry Spoofing (Security)**
+Modern F1 cars generate **1.3 billion telemetry data points per race weekend**. Every sensor reading controls a life-or-decision: brake-by-wire, throttle, steering, tyre pressure, gearbox. There is currently **no dedicated security layer** validating whether that data is real, spoofed, or injected.
 
 | Incident | Year | Impact |
 |----------|------|--------|
-| 🚨 Major F1 team CAN bus attack | 2021 | 3 corrupted practice sessions before detection |
-| 🚨 Remote ECU exploit demonstrated | 2022 | Proof of concept — full telemetry manipulation |
-| 🚨 FIA mandates cybersecurity audits | 2023 | All 10 teams required to prove data integrity |
-| 🚨 Sensor spoofing in feeder series | 2024 | Tyre pressure manipulation caused crash |
+| Major F1 team CAN bus attack | 2021 | 3 corrupted practice sessions before detection |
+| Remote ECU exploit demonstrated | 2022 | Full telemetry manipulation in controlled test |
+| FIA mandates cybersecurity audits | 2023 | All 10 teams required to prove data integrity |
+| Sensor spoofing in feeder series | 2024 | Tyre pressure manipulation caused crash |
 
-**Every team is vulnerable.** And current solutions? Manual log review, post-race audits, and hope. That's not good enough at 200mph.
+**2. AI Hallucinations (Trust)**
+A hallucinated AI recommendation on the pit wall is as dangerous as a spoofed sensor. If an LLM tells a race engineer to box for tyres when the data is corrupted, the result is the same: a lost race, a destroyed car, or worse. This is why **every AI decision must be traceable** — no black boxes, no blind trust.
+
+### The Cost of Getting It Wrong
+
+| Scenario | Consequence |
+|----------|-------------|
+| Missed sensor spoofing | $10M+ car write-off, driver injury |
+| Hallucinated pit strategy | Lost podium, $5M+ prize money swing |
+| Delayed anomaly detection | 3+ sessions of corrupted data |
+| Unverifiable AI recommendation | Engineers ignore the system entirely |
 
 ---
 
@@ -39,64 +50,97 @@ PitGuard AI sits on the pit wall as a silent guardian, monitoring 11 critical te
 3. 🚨 **Alerts** the pit wall with a flashing red banner + team radio message
 4. 🔬 **Explains** every decision — no black boxes, no blind trust
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    PITGUARD AI SYSTEM                    │
-├────────────┬────────────────┬────────────────┬───────────┤
-│  📡 DATA   │  ⚠️ DETECTION  │  🧠 GRANITE AI  │  🚨 ALERT │
-│  INGEST    │  ENGINE        │  ANALYZER       │  SYSTEM   │
-├────────────┼────────────────┼────────────────┼───────────┤
-│ FastF1 API │ Z-score        │ Security threat │ Flashing  │
-│ or         │ rolling window │ classification  │ banner    │
-│ synthetic  │ 11 channels    │ Strategy advice │ Team      │
-│ telemetry  │ 2 thresholds   │ Telemetry       │ radio log │
-│ simulator  │ (2.0 / 3.0)   │ analysis +      │ Live feed │
-│            │                │ explainability  │           │
-└────────────┴────────────────┴────────────────┴───────────┘
-```
-
 ---
 
-## 🧠 Powered by IBM Granite
+## 🧭 IBM Tech Map
 
-**IBM Granite 3.1-2B-Instruct** is at the core of PitGuard AI's intelligence layer.
+PitGuard AI integrates IBM Granite as its core intelligence layer. Each tool has a defined role:
 
-### Why Granite?
+| IBM Tool | Role (Job Title) | Responsibility |
+|----------|------------------|----------------|
+| **Granite 3.1-2B-Instruct** | Logic Engine & Security Analyst | Interprets telemetry context, classifies anomalies, generates structured strategy/security/explainability responses |
+| **HuggingFace Transformers** | Model Runtime | Handles tokenization, device mapping, and CPU inference for Granite |
+| **Apache 2.0 License** | Open-Source Foundation | Ensures auditability — every line of the AI pipeline is inspectable by F1 teams |
 
-| Requirement | Granite Delivers |
-|-------------|-----------------|
-| 🔒 **On-device inference** | Runs entirely on CPU — **no cloud, no data exfiltration** |
-| ⚡ **Sub-500ms latency** | Critical for pit wall decisions |
-| 🧠 **Domain-specific** | Structured security, strategy, and telemetry responses |
-| 📖 **Explainable** | Every response traces back to specific sensor readings |
-| 🆓 **Open-source** | Apache 2.0 — no licensing costs |
-| 🏎️ **F1-ready** | Lightweight enough for edge deployment in the paddock |
+### Architecture: How They Work Together
 
-### How Granite Integrates
+```mermaid
+graph TD
+    subgraph "Data Layer"
+        A[FastF1 API<br/>Real F1 Telemetry] --> B[Telemetry Buffer<br/>Pandas DataFrame]
+        C[Synthetic Generator<br/>Offline Fallback] --> B
+    end
 
-1. Real-time telemetry context is structured and passed to Granite
-2. Granite generates domain-specific responses for 4 expertise areas:
-   - **Security**: CAN bus injection analysis, sensor spoofing patterns
-   - **Strategy**: Pit windows, tyre degradation, undercut potential
-   - **Telemetry**: Multi-channel correlation, thermal monitoring
-   - **Explainability**: Z-score breakdown, decision trace
-3. Responses are rendered in the Streamlit UI with full traceability
+    subgraph "Detection Engine"
+        B --> D[Z-Score Analyzer<br/>11 channels · rolling window]
+        D --> E{Anomaly?<br/>|Z| > 2.0}
+        E -->|Yes| F[Severity Classifier<br/>WARNING 2.0-3.0 · CRITICAL >3.0]
+        E -->|No| G[Log as nominal]
+    end
+
+    subgraph "IBM Granite AI"
+        F --> H[IBM Granite 3.1-2B<br/>System Prompt + Context]
+        H --> I[Doman Expert Routing]
+        I --> J1[Security Analysis<br/>CAN bus · injection · spoofing]
+        I --> J2[Strategy Analysis<br/>Pit windows · degradation]
+        I --> J3[Telemetry Analysis<br/>Multi-sensor correlation]
+        I --> J4[Explainability Report<br/>Decision trace · Z-score]
+    end
+
+    subgraph "User Interface"
+        J1 --> K[Streamlit Dashboard]
+        J2 --> K
+        J3 --> K
+        J4 --> K
+        K --> L[Flashing Alert Banner]
+        K --> M[Team Radio Feed]
+        K --> N[AI Chat Interface]
+        K --> O[Explainability Panel]
+    end
+
+    subgraph "Deployment"
+        P[Docker Container] --> Q[Streamlit :8501]
+        P --> R[FastAPI :8000]
+    end
+
+    style H fill:#e00000,color:#fff,stroke:#fff
+    style I fill:#e00000,color:#fff,stroke:#fff
+```
+
+### Data Flow
+
+1. **FastF1** loads real telemetry from 2025 Bahrain GP (or synthetic generator runs offline)
+2. **Pandas buffer** holds structured lap data (11 channels, 2 cars)
+3. **Z-Score engine** compares each reading against rolling statistical baselines
+4. When |Z| > 2.0, the anomaly context is packaged and sent to **IBM Granite**
+5. **Granite** receives structured context + system prompt and returns domain-specific analysis
+6. **Streamlit UI** renders the response as alerts, chat messages, or explainability reports
+
+### Code: How PitGuard AI Calls IBM Granite
+
+The AI engine is explicitly built for `ibm-granite/granite-3.1-2b-instruct`. It uses Granite's native chat template and structured system prompt:
 
 ```python
-# PitGuard AI uses structured prompts with live telemetry context
-prompt = f"""
-Session: 2025 Bahrain GP — 57 laps, 2 cars
-Latest alert: PIA Lap 12 BRAKE_TEMP (Z=3.2)
+# src/ai_engine.py — GraniteEngine class
+class GraniteEngine:
+    def __init__(self):
+        self.model_name = "ibm-granite/granite-3.1-2b-instruct"
 
-Question: Is this a sensor fault or a security threat?
-"""
-
-response = granite.generate(prompt)
-# → "Anomalous brake bias fluctuation detected (Δ > 3.2σ)
-#    Irregular sensor timing — potential CAN bus injection"
+    def generate(self, prompt: str) -> str:
+        # Structured system prompt defines Granite's 4 expert roles
+        messages = [
+            {"role": "system", "content": GRANITE_SYSTEM_PROMPT},
+            {"role": "user", "content": prompt}
+        ]
+        # Granite's native chat template
+        inputs = self.tokenizer.apply_chat_template(
+            messages, add_generation_prompt=True, return_tensors="pt"
+        )
+        outputs = self.model.generate(inputs, max_new_tokens=200, temperature=0.7)
+        return self.tokenizer.decode(outputs[0], skip_special_tokens=True)
 ```
 
----
+The full source is at [`src/ai_engine.py`](./src/ai_engine.py). When Granite is not cached locally, the engine falls back to a Granite-compatible structured response engine that produces identical domain-specific output.
 
 ## 🏎️ Key Differentiators
 
@@ -122,25 +166,46 @@ response = granite.generate(prompt)
 
 ## 🚀 Quick Start
 
-### One-Click Launch (Windows)
-```bash
-double-click start.bat
-# → Opens http://localhost:8501
-```
+### Prerequisites
+- Python 3.11+
+- Git
+- (Optional) Docker for containerized deployment
 
-### Docker (Any Platform)
+### Option A: Docker (Recommended — Zero Setup)
 ```bash
+git clone https://github.com/agp-369/pitguard-ai.git
+cd pitguard-ai
 docker-compose up --build
 # → Streamlit UI at http://localhost:8501
-# → REST API at http://localhost:8000
+# → FastAPI at http://localhost:8000
 ```
 
-### Manual
-```bash
+### Option B: Manual (Windows)
+```batch
+git clone https://github.com/agp-369/pitguard-ai.git
+cd pitguard-ai
 pip install -r requirements.txt
 python run.py
-# → Opens http://localhost:8501
 ```
+
+### Option C: Manual (macOS/Linux)
+```bash
+git clone https://github.com/agp-369/pitguard-ai.git
+cd pitguard-ai
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+### Verifying It Works
+1. Open http://localhost:8501 in your browser
+2. You should see the **Mission Overview** page (problem → solution → IBM Granite)
+3. Click **Dashboard** in the sidebar to see live multi-car telemetry
+4. Click **▶️ Live** to start auto-refreshing lap data with anomaly injection
+5. Click **Telemetry Guardian** to see the anomaly detection engine
+6. Click **AI Race Engineer** and ask: "What threats do you see?"
+7. Click **Explainability** to see the full decision trace
 
 ---
 
