@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.safetensors
+*.bin
+*.pth
+data/cache/
+*.ff1pkl
+*.sqlite
+.git/
+.gitignore
+README.md
+DEMO_SCRIPT.md
+LICENSE
