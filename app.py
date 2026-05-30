@@ -114,7 +114,13 @@ if "radio_log" not in st.session_state:
     st.session_state.radio_log = []
 
 now_utc = datetime.now(timezone.utc)
-df = st.session_state.telemetry_data
+df = st.session_state.get("telemetry_data")
+if df is None or len(df) == 0:
+    st.error("No telemetry data. Click **New Session**.")
+    c1 = c2 = df_empty = pd.DataFrame({"lap": [1], "car_id": [1]})
+    anomalies = high_anomalies = pd.DataFrame()
+    st.stop()
+
 c1 = df[df["car_id"] == 1]
 c2 = df[df["car_id"] == 2]
 anomalies = detect_anomalies(df)
@@ -177,6 +183,7 @@ with st.sidebar:
     🏁 <strong>Dashboard</strong> — Multi-car telemetry command center<br>
     🛡️ <strong>Telemetry Guardian</strong> — Anomaly detection & alerting<br>
     🤖 <strong>AI Race Engineer</strong> — IBM Granite chat interface<br>
+    ⛽ <strong>Pit Strategy</strong> — Optimal pit windows & undecut analysis<br>
     🧩 <strong>Explainability</strong> — Full decision traceability</small>
     """, unsafe_allow_html=True)
     st.divider()
@@ -306,20 +313,30 @@ elif page == "Dashboard":
     last_c2 = c2.iloc[-1]
     gap = round(last_c2["lap_time"] - last_c1["lap_time"], 3)
 
+    def _card(v, label, sub="", style=""):
+        style_attr = f' style="{style}"' if style else ""
+        sub_html = f'<div style="font-size:0.7rem;color:#e00000">{sub}</div>' if sub else ""
+        return (f'<div class="metric-card"><div class="metric-value"{style_attr}>'
+                f'{v}</div>{sub_html}<div class="metric-label">{label}</div></div>')
+
     col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
-        st.markdown(f"""<div class="metric-card"><div class="metric-value car1-color">{last_c1['speed_kmh']:.0f}</div><div style="font-size:0.7rem;color:#e00000">{driver1}</div><div class="metric-label">Speed (km/h)</div></div>""", unsafe_allow_html=True)
+        st.markdown(_card(f"{last_c1['speed_kmh']:.0f}", "Speed (km/h)", sub=driver1), unsafe_allow_html=True)
     with col2:
-        st.markdown(f"""<div class="metric-card"><div class="metric-value car2-color">{last_c2['speed_kmh']:.0f}</div><div style="font-size:0.7rem;color:#0088ff">{driver2}</div><div class="metric-label">Speed (km/h)</div></div>""", unsafe_allow_html=True)
+        st.markdown(_card(f"{last_c2['speed_kmh']:.0f}", "Speed (km/h)", sub=driver2),
+                    unsafe_allow_html=True)
     with col3:
         gap_color = "#00e000" if gap < 0 else "#e00000"
-        st.markdown(f"""<div class="metric-card"><div class="metric-value" style="color:{gap_color}">{'+' if gap > 0 else ''}{gap:.2f}s</div><div class="metric-label">Gap {driver2}→{driver1}</div></div>""", unsafe_allow_html=True)
+        sign = "+" if gap > 0 else ""
+        st.markdown(_card(f"{sign}{gap:.2f}s", f"Gap {driver2}→{driver1}",
+                          style=f"color:{gap_color}"), unsafe_allow_html=True)
     with col4:
         a = len(anomalies)
         c = "#e00000" if a > 0 else "#00e000"
-        st.markdown(f"""<div class="metric-card"><div class="metric-value" style="color:{c}">{a}</div><div class="metric-label">Active Alerts</div></div>""", unsafe_allow_html=True)
+        st.markdown(_card(str(a), "Active Alerts", style=f"color:{c}"), unsafe_allow_html=True)
     with col5:
-        st.markdown(f"""<div class="metric-card"><div class="metric-value">{last_c1['tyre_temp_c']:.0f}°C</div><div style="font-size:0.7rem;color:#e00000">{driver1}</div><div class="metric-label">Tyre Temp</div></div>""", unsafe_allow_html=True)
+        st.markdown(_card(f"{last_c1['tyre_temp_c']:.0f}°C", "Tyre Temp", sub=driver1),
+                    unsafe_allow_html=True)
     st.divider()
 
     tab1, tab2, tab3 = st.tabs(["📊 Multi-Car Telemetry", "⚠️ Security Heatmap", "📈 Performance Trend"])

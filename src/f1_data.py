@@ -46,6 +46,7 @@ def inject_anomaly(data: pd.DataFrame, lap: int, anomaly_type: str = "brake", ca
 
 def detect_anomalies(data: pd.DataFrame) -> pd.DataFrame:
     results = []
+    data = data.reset_index(drop=True)
     numerical_cols = ["lap_time", "speed_kmh", "tyre_temp_c", "brake_temp_c", "throttle_pct", "steering_angle", "rpm"]
     for col in numerical_cols:
         if col not in data.columns:

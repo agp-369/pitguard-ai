@@ -24,5 +24,3 @@ services:
       - pitguard-api
     restart: unless-stopped
 
-volumes:
-  cache-data:
