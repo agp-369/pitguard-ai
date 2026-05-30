@@ -74,7 +74,7 @@ graph TD
 
     subgraph "Detection Engine"
         B --> D[Z-Score Analyzer - 11 channels]
-        D --> E{Anomaly > |Z| 2.0?}
+        D --> E{Anomaly > threshold?}
         E -->|Yes| F[Severity Classifier - Warning / Critical]
         E -->|No| G[Log as Nominal]
     end
@@ -231,12 +231,6 @@ PitGuard-AI/
 ├── README.md               # 📖 This file
 └── DEMO_SCRIPT.md          # 🎬 Demo video script
 ```
-
----
-
-## 🎬 Demo Video Script (3 Minutes)
-
-See [`DEMO_SCRIPT.md`](./DEMO_SCRIPT.md) for the full script.
 
 ---
 
